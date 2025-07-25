@@ -1,0 +1,549 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+# https://dax.guide
+name: Microsoft DAX
+file_extensions:
+  - dax
+  - DAX
+scope: source.dax
+contexts:
+  main:
+    - include: Noise
+    - include: LiteralExpression
+    - include: Keywords
+    - include: BuiltInFunctions
+    - include: ImplicitVariable
+    - include: IntrinsicVariable
+    - include: Operators
+    - include: DotOperators
+    - include: scope:source.daxexpression.stdlibrary.function
+    - include: TypeName
+    - include: RecordExpression
+    - include: Punctuation
+    - include: QuotedIdentifier
+    - include: Identifier
+    - match: '\['
+      captures:
+        1: punctuation.section.brackets.begin.dax
+      push:
+        - meta_scope: meta.literal-attribute.dax
+        - match: '\]'
+          captures:
+            0: punctuation.section.brackets.end.dax
+          pop: true
+        - include: Noise
+        - include: IllegalKeyword
+        - include: scope:source.daxexpression
+    - match: \b(section)\b
+      captures:
+        1: keyword.other.section.dax
+      push:
+        - meta_scope: meta.sectiondeclaration.dax
+        - match: ;
+          captures:
+            0: punctuation.terminator.sectiondeclaration.dax
+          pop: true
+        - include: Noise
+        - include: IllegalKeyword
+        - include: SectionName
+        - match: '[^\s]'
+          scope: invalid.illegal.dax
+    - match: \b(shared)\b
+      captures:
+        0: keyword.other.shared.dax
+      push:
+        - match: ;
+          captures:
+            0: punctuation.terminator.sectionmember.dax
+          pop: true
+        - include: Noise
+        - include: IllegalKeyword
+        - include: Section
+    - include: IllegalKeyword
+    - include: IllegalOperator
+    - include: Section
+  BlockComment:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.dax
+        - match: \*/
+          pop: true
+  IllegalKeyword:
+    - match: \b(and|as|each|else|error|false|if|in|is|let|meta|not|otherwise|or|section|shared|then|true|try|type)\b
+      scope: invalid.illegal.keyword.dax
+  IllegalOperator:
+    - match: '>|<|=|&|\+|-|\*|\/|!|\?|\.|,|\(|\)|\{|\}|_'
+      scope: invalid.illegal.keyword.operator.dax
+  LineComment:
+    - match: //.*
+      scope: comment.line.double-slash.dax
+  Noise:
+    - include: BlockComment
+    - include: LineComment
+    - include: Whitespace
+  Section:
+    - match: '([_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*(?:\.[_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*)*)'
+      captures:
+        1: entity.name.sectionmember.dax
+      push:
+        - meta_scope: meta.sectionmember.dax
+        - match: (?=;)
+          captures:
+            0: punctuation.terminator.sectionmember.dax
+          pop: true
+        - include: SectionMemberPatterns
+  SectionMemberPatterns:
+    - include: Noise
+    - match: '[^\s=]'
+      scope: invalid.illegal.dax
+    - match: "="
+      captures:
+        0: keyword.operator.assignment.dax
+      push:
+        - meta_content_scope: meta.expression.dax
+        - match: (?=;)
+          pop: true
+        - include: scope:source.daxexpression
+  SectionName:
+    - match: '([_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*(?:\.[_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*)*)\s*'
+      captures:
+        1: entity.name.section.dax
+      push:
+        - match: (?=;)
+          pop: true
+        - include: Noise
+        - match: '[^\s;]'
+          scope: invalid.illegal.dax
+  Whitespace:
+    - match: \s*
+  BuiltInFunctions:
+    - match: |-
+        (?ix:\b(
+        | CALENDAR
+        | CALENDARAUTO
+        | DATE
+        | DATEDIFF
+        | DATEVALUE
+        | DAY
+        | EDATE
+        | EOMONTH
+        | HOUR
+        | MINUTE
+        | MONTH
+        | NOW
+        | SECOND
+        | TIME
+        | TIMEVALUE
+        | TODAY
+        | WEEKDAY
+        | WEEKNUM
+        | YEAR
+        | YEARFRAC
+        | CLOSINGBALANCEMONTH
+        | CLOSINGBALANCEQUARTER
+        | CLOSINGBALANCEYEAR
+        | DATEADD
+        | DATESBETWEEN
+        | DATESINPERIOD
+        | DATESMTD
+        | DATESQTD
+        | DATESYTD
+        | ENDOFMONTH
+        | ENDOFQUARTER
+        | ENDOFYEAR
+        | FIRSTDATE
+        | FIRSTNONBLANK
+        | LASTDATE
+        | LASTNONBLANK
+        | NEXTDAY
+        | NEXTMONTH
+        | NEXTQUARTER
+        | NEXTYEAR
+        | OPENINGBALANCEMONTH
+        | OPENINGBALANCEQUARTER
+        | OPENINGBALANCEYEAR
+        | PARALLELPERIOD
+        | PREVIOUSDAY
+        | PREVIOUSMONTH
+        | PREVIOUSQUARTER
+        | PREVIOUSYEAR
+        | SAMEPERIODLASTYEAR
+        | STARTOFMONTH
+        | STARTOFQUARTER
+        | STARTOFYEAR
+        | TOTALMTD
+        | TOTALQTD
+        | TOTALYTD
+        | DISTINCTCOUNTNOBLANK
+        | CONTAINSSTRINGEXACT
+        | CONTAINSSTRING
+        | USERCULTURE
+        | ALLCROSSFILTERED
+        | APPROXIMATEDISTINCTCOUNT
+        | ABS
+        | ACOS
+        | ACOSH
+        | ASIN
+        | ASINH
+        | ATAN
+        | ATANH
+        | CEILING
+        | COMBIN
+        | COMBINA
+        | COS
+        | COSH
+        | CURRENCY
+        | DEGREES
+        | DIVIDE
+        | EVEN
+        | EXP
+        | FACT
+        | FLOOR
+        | GCD
+        | INT
+        | ISO.CEILING
+        | LCM
+        | LN
+        | LOG
+        | LOG10
+        | INT
+        | MROUND
+        | ODD
+        | PI
+        | POWER
+        | PRODUCT
+        | PRODUCTX
+        | QUOTIENT
+        | RADIANS
+        | RAND
+        | RANDBETWEEN
+        | ROUND
+        | ROUNDDOWN
+        | ROUNDUP
+        | SIGN
+        | SQRT
+        | SUM
+        | SUMX
+        | TRUNC
+        | DATATABLE
+        | ERROR
+        | EXCEPT
+        | GENERATESERIES
+        | GROUPBY
+        | INTERSECT
+        | ISEMPTY
+        | NATURALINNERJOIN
+        | NATURALLEFTOUTERJOIN
+        | SUMMARIZECOLUMNS
+        | Table Constructor
+        | TREATAS
+        | UNION
+        | VAR
+        | ADDMISSINGITEMS
+        | ALL
+        | ALLEXCEPT
+        | ALLNOBLANKROW
+        | ALLSELECTED
+        | CALCULATE
+        | CALCULATETABLE
+        | CROSSFILTER Function
+        | DISTINCT
+        | EARLIER
+        | EARLIEST
+        | FILTER
+        | FILTERS
+        | HASONEFILTER
+        | HASONEVALUE
+        | ISCROSSFILTERED
+        | ISFILTERED
+        | KEEPFILTERS
+        | RELATED
+        | RELATEDTABLE
+        | SELECTEDVALUE
+        | SUBSTITUTEWITHINDEX
+        | USERELATIONSHIP
+        | VALUES
+        | PATH
+        | PATHCONTAINS
+        | PATHITEM
+        | PATHITEMREVERSE
+        | PATHLENGTH
+        | CONTAINS
+        | CUSTOMDATA
+        | ISBLANK
+        | ISERROR
+        | ISEVEN
+        | ISLOGICAL
+        | ISNONTEXT
+        | ISNUMBER
+        | ISONORAFTER
+        | ISTEXT
+        | LOOKUPVALUE
+        | USERNAME
+        | RETURN
+        | UTCTODAY
+        | UTCNOW
+        | COMBINEVALUES
+        | DISTINCT
+        | T.INV.2T
+        | T.DIST.RT
+        | T.DIST.2T
+        | T.DIST
+        | NORM.S.INV
+        | NORM.S.DIST
+        | NORM.INV
+        | NORM.DIST
+        | ISINSCOPE
+        | SELECTEDMEASUREFORMATSTRING
+        | REMOVEFILTERS
+        | CONVERT
+        | ADDCOLUMNS
+        | AVERAGE
+        | AVERAGEA
+        | AVERAGEX
+        | BETA.DIST
+        | BETA.INV
+        | CHISQ.INV
+        | CHISQ.INV.RT
+        | CONFIDENCE.NORM
+        | CONFIDENCE.T
+        | COUNT
+        | COUNTA
+        | COUNTAX
+        | COUNTBLANK
+        | COUNTROWS
+        | COUNTX
+        | CROSSJOIN
+        | DATATABLE
+        | DISTINCTCOUNT
+        | EXPON.DIST
+        | GENERATE
+        | GENERATEALL
+        | GEOMEAN
+        | GEOMEANX
+        | MAX
+        | MAXA
+        | MAXX
+        | MEDIAN
+        | MEDIANX
+        | MIN
+        | MINA
+        | MINX
+        | PERCENTILE.EXC
+        | PERCENTILE.INC
+        | PERCENTILEX.EXC
+        | PERCENTILEX.INC
+        | POISSON.DIST
+        | RANK.EQ
+        | RANKX
+        | ROW
+        | SAMPLE
+        | SELECTCOLUMNS
+        | SIN
+        | SINH
+        | STDEV.P
+        | STDEV.S
+        | STDEVX.P
+        | STDEVX.S
+        | SQRTPI
+        | SUMMARIZE
+        | TAN
+        | TANH
+        | TOPN
+        | VAR.P
+        | VAR.S
+        | VARX.P
+        | VARX.S
+        | XIRR
+        | XNPV
+        | AND
+        | FALSE
+        | IF
+        | IFERROR
+        | NOT
+        | OR
+        | SWITCH
+        | TRUE
+        | BLANK
+        | CODE
+        | CONCATENATE
+        | CONCATENATEX
+        | EXACT
+        | FIND
+        | FIXED
+        | FORMAT
+        | LEFT
+        | LEN
+        | LOWER
+        | MID
+        | REPLACE
+        | REPT
+        | RIGHT
+        | SEARCH
+        | SUBSTITUTE
+        | TRIM
+        | UNICHAR
+        | UPPER
+        | VALUE
+                            )\b)
+      scope: support.function.dax
+  DecimalNumber:
+    - match: '(?<![\d\w])(\d*\.\d+)\b'
+      scope: constant.numeric.decimal.dax
+  DotOperators:
+    - match: (?<!\.)(?:(\.\.\.)|(\.\.))(?!\.)
+      captures:
+        1: keyword.operator.ellipsis.dax
+        2: keyword.operator.list.dax
+  EscapeSequence:
+    - match: '#\('
+      captures:
+        0: punctuation.definition.escapesequence.begin.dax
+      push:
+        - meta_scope: constant.character.escapesequence.dax
+        - match: \)
+          captures:
+            0: punctuation.definition.escapesequence.end.dax
+          pop: true
+        - match: '(#|\h{4}|\h{8}|cr|lf|tab)(?:,(#|\h{4}|\h{8}|cr|lf|tab))*'
+        - match: '[^\)]'
+          scope: invalid.illegal.escapesequence.dax
+  FloatNumber:
+    - match: (\d*\.)?\d+(e|E)(\+|-)?\d+
+      scope: constant.numeric.float.dax
+  HexNumber:
+    - match: '0(x|X)\h+'
+      scope: constant.numeric.integer.hexadecimal.dax
+  Identifier:
+    - match: |-
+        (?ix:
+                        # look-behind; identifier must not follow an identifier-part-char or a dot
+                        (?<![\._\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}])
+                        # Optional @ symbol
+                        (@?)
+
+                        # start of captured group
+                        (
+                            # identifier-start-character
+                            [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}]
+                            # 0-or-more identifier-part-characters
+                            [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*
+
+                            # optionally followed by zero-or-more of this group
+                            (?:
+                                # dot
+                                \.
+                                # identifier-start-character
+                                [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}]
+                                # 0-or-more identifier-part-characters
+                                [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*
+                            )*
+                        # end of captured group, and word boundary
+                        ) \b
+                    )
+      captures:
+        1: keyword.operator.inclusiveidentifier.dax
+        2: entity.name.dax
+  ImplicitVariable:
+    - match: \b_\b
+      scope: keyword.operator.implicitvariable.dax
+  InclusiveIdentifier:
+    - match: "@"
+      captures:
+        0: inclusiveidentifier.dax
+  IntNumber:
+    - match: \b(\d+)\b
+      captures:
+        1: constant.numeric.integer.dax
+  IntrinsicVariable:
+    - match: '(?<![\d\w])(#sections|#shared)\b'
+      captures:
+        1: constant.language.intrinsicvariable.dax
+  Keywords:
+    - match: \b(?:(and|or|not)|(if|then|else)|(try|error|otherwise)|(as|each|in|is|let|meta|type)|(section|shared))\b
+      captures:
+        1: keyword.operator.word.logical.dax
+        2: keyword.control.conditional.dax
+        3: keyword.control.exception.dax
+        4: keyword.other.dax
+        5: invalid.illegal.keyword-in-wrong-context.dax
+  LiteralExpression:
+    - include: String
+    - include: NumericConstant
+    - include: LogicalConstant
+    - include: NullConstant
+    - include: FloatNumber
+    - include: DecimalNumber
+    - include: HexNumber
+    - include: IntNumber
+  LogicalConstant:
+    - match: \b(true|false)\b
+      scope: constant.language.logical.dax
+  NullConstant:
+    - match: \b(null)\b
+      scope: constant.language.null.dax
+  NumericConstant:
+    - match: '(?<![\d\w])(#infinity|#nan)\b'
+      captures:
+        1: constant.language.numeric.float.dax
+  Operators:
+    - match: (=>)|(=)|(<>|<|>|<=|>=)|(&)|(\+|-|\*|\/)|(!)|(\?)
+      captures:
+        1: keyword.operator.function.dax
+        2: keyword.operator.assignment-or-comparison.dax
+        3: keyword.operator.comparison.dax
+        4: keyword.operator.combination.dax
+        5: keyword.operator.arithmetic.dax
+        6: keyword.operator.sectionaccess.dax
+        7: keyword.operator.optional.dax
+  Punctuation:
+    - match: '(,)|(\()|(\))|({)|(})'
+      captures:
+        1: punctuation.separator.dax
+        2: punctuation.section.parens.begin.dax
+        3: punctuation.section.parens.end.dax
+        4: punctuation.section.braces.begin.dax
+        5: punctuation.section.braces.end.dax
+  QuotedIdentifier:
+    - match: '#"'
+      captures:
+        0: punctuation.definition.quotedidentifier.begin.dax
+      push:
+        - meta_scope: entity.name.dax
+        - match: '"(?!")'
+          captures:
+            0: punctuation.definition.quotedidentifier.end.dax
+          pop: true
+        - match: '""'
+          scope: constant.character.escape.quote.dax
+        - include: EscapeSequence
+  RecordExpression:
+    - match: '\['
+      captures:
+        0: punctuation.section.brackets.begin.dax
+      push:
+        - meta_content_scope: constant.language.logical.dax #meta.recordexpression.dax
+        - match: '\]'
+          captures:
+            0: punctuation.section.brackets.end.dax
+          pop: true
+        # - include: main
+  String:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.dax
+      push:
+        - meta_scope: string.quoted.double.dax
+        - match: '"(?!")'
+          captures:
+            0: punctuation.definition.string.end.dax
+          pop: true
+        - match: '""'
+          scope: constant.character.escape.quote.dax
+        - include: EscapeSequence
+  TypeName:
+    - match: \b(?:(optional|nullable)|(any|anynonnull|binary|date|datetime|datetimezone|duration|function|list|logical|none|null|number|record|table|text|type))\b
+      captures:
+        1: storage.modifier.dax
+        2: storage.type.dax
